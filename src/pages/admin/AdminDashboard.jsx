@@ -50,6 +50,9 @@ export default function AdminDashboard() {
   const [modal, setModal] = useState(null) // { message, onConfirm }
   const [deleting, setDeleting] = useState(false)
 
+  // Mobile nav
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+
   useEffect(() => {
     if (sessionStorage.getItem('adminAuth') !== 'true') {
       navigate('/admin')
@@ -217,17 +220,24 @@ export default function AdminDashboard() {
       )}
 
       {/* Sidebar */}
-      <aside className="admin-sidebar">
+      <aside className={`admin-sidebar${mobileNavOpen ? ' admin-sidebar--open' : ''}`}>
         <div className="admin-sidebar-brand">
           <span className="admin-sidebar-monogram">W&amp;G</span>
           <span className="admin-sidebar-title">Dashboard</span>
+          <button
+            className="admin-hamburger"
+            onClick={() => setMobileNavOpen(o => !o)}
+            aria-label="Toggle menu"
+          >
+            {mobileNavOpen ? '✕' : '☰'}
+          </button>
         </div>
         <nav className="admin-sidebar-nav">
           {navItems.map(item => (
             <button
               key={item.id}
               className={`admin-nav-item${activeSection === item.id ? ' admin-nav-item--active' : ''}`}
-              onClick={() => setActiveSection(item.id)}
+              onClick={() => { setActiveSection(item.id); setMobileNavOpen(false) }}
             >
               {item.label}
             </button>
