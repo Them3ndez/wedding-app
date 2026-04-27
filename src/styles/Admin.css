@@ -613,6 +613,125 @@
   font-weight: 600;
 }
 
+/* ── Analytics ──────────────────────────────────────────────────────────── */
+.analytics-title {
+  font-family: var(--adm-font-serif);
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--adm-text);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.chart-card {
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-border);
+  border-radius: 12px;
+  box-shadow: var(--adm-shadow-sm);
+  padding: 24px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chart-card-label {
+  font-size: 0.72rem;
+  color: var(--adm-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Ring chart */
+.chart-ring-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-ring-center {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.chart-ring-pct {
+  font-family: var(--adm-font-serif);
+  font-size: 2.2rem;
+  font-weight: 400;
+  color: var(--adm-text);
+  line-height: 1;
+}
+
+.chart-ring-sub {
+  font-size: 0.68rem;
+  color: var(--adm-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+}
+
+/* Donut with legend */
+.chart-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 200px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.84rem;
+  color: var(--adm-text-muted);
+}
+
+.chart-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chart-legend-name {
+  flex: 1;
+  color: var(--adm-text);
+}
+
+.chart-legend-val {
+  font-weight: 600;
+  color: var(--adm-text);
+  font-size: 0.88rem;
+}
+
+.chart-empty {
+  font-size: 0.88rem;
+  color: var(--adm-text-muted);
+  font-style: italic;
+  margin: 0;
+  padding: 24px 0;
+  text-align: center;
+}
+
 /* ── Toolbar ────────────────────────────────────────────────────────────── */
 .admin-toolbar-left {
   display: flex;
@@ -960,6 +1079,11 @@
 
   .admin-meal-bar-track {
     height: 22px;
+  }
+
+  /* ── Analytics grid: single column ─────────────────────────────────────── */
+  .analytics-grid {
+    grid-template-columns: 1fr;
   }
 
   /* ── Modal ──────────────────────────────────────────────────────────────── */

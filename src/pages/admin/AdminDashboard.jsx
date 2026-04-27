@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import '../../styles/Admin.css'
+import {
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, LineChart, Line, CartesianGrid,
+} from 'recharts'
 
 const MEAL_COLORS = {
   chicken: '#4caf82',
@@ -9,6 +13,8 @@ const MEAL_COLORS = {
   vegetarian: '#e0c96e',
   vegan: '#e07b5b',
 }
+
+const ATTENDANCE_COLORS = { Confirmed: '#2D6A4F', Declined: '#A63D2F', Maybe: '#B07D2D' }
 
 /* ── Confirmation Modal ─────────────────────────────────────────────────── */
 function ConfirmModal({ message, onConfirm, onCancel, loading }) {
@@ -188,6 +194,32 @@ export default function AdminDashboard() {
   }, {})
   const totalMeals = Object.values(mealCounts).reduce((a, b) => a + b, 0)
 
+  // Chart data
+  const rsvpCompletionPct = totalInvited > 0 ? Math.round((rsvps.length / totalInvited) * 100) : 0
+  const completionData = [
+    { name: 'Responded', value: rsvps.length },
+    { name: 'Remaining', value: Math.max(0, totalInvited - rsvps.length) },
+  ]
+  const attendanceData = [
+    { name: 'Confirmed', value: confirmed },
+    { name: 'Declined', value: declined },
+    { name: 'Maybe', value: maybe },
+  ].filter(d => d.value > 0)
+  const mealChartData = Object.entries(mealCounts).map(([name, value]) => ({
+    name: name.charAt(0).toUpperCase() + name.slice(1),
+    value,
+  }))
+  const timelineData = [...rsvps]
+    .filter(r => r.created_at)
+    .reduce((acc, r) => {
+      const date = new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      const existing = acc.find(d => d.date === date)
+      if (existing) existing.count++
+      else acc.push({ date, count: 1 })
+      return acc
+    }, [])
+    .reverse()
+
   const navItems = [
     { id: 'overview', label: 'Overview' },
     { id: 'guests', label: 'Guest List' },
@@ -279,6 +311,108 @@ export default function AdminDashboard() {
             <div className="admin-stat-card admin-stat-card--wide">
               <span className="admin-stat-number">{rsvps.length}</span>
               <span className="admin-stat-label">Total RSVPs Submitted</span>
+            </div>
+
+            {/* Analytics */}
+            <h2 className="analytics-title">Analytics</h2>
+            <div className="analytics-grid">
+
+              {/* 1. RSVP Completion Ring */}
+              <div className="chart-card">
+                <p className="chart-card-label">RSVP Completion</p>
+                <div className="chart-ring-wrapper">
+                  <ResponsiveContainer width="100%" height={220}>
+                    <PieChart>
+                      <Pie
+                        data={completionData}
+                        cx="50%" cy="50%"
+                        innerRadius={70} outerRadius={95}
+                        dataKey="value"
+                        startAngle={90} endAngle={-270}
+                        strokeWidth={0}
+                      >
+                        <Cell fill="#C9A84C" />
+                        <Cell fill="#E8E4DE" />
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="chart-ring-center">
+                    <span className="chart-ring-pct">{rsvpCompletionPct}%</span>
+                    <span className="chart-ring-sub">responded</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Attendance Breakdown Donut */}
+              <div className="chart-card">
+                <p className="chart-card-label">Attendance Breakdown</p>
+                <div className="chart-donut-wrap">
+                  <ResponsiveContainer width="55%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={attendanceData}
+                        cx="50%" cy="50%"
+                        innerRadius={55} outerRadius={80}
+                        dataKey="value"
+                        strokeWidth={0}
+                      >
+                        {attendanceData.map((entry, i) => (
+                          <Cell key={i} fill={ATTENDANCE_COLORS[entry.name]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(v, n) => [v, n]} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="chart-legend">
+                    {attendanceData.map((entry, i) => (
+                      <div key={i} className="chart-legend-item">
+                        <span className="chart-legend-dot" style={{ background: ATTENDANCE_COLORS[entry.name] }} />
+                        <span className="chart-legend-name">{entry.name}</span>
+                        <span className="chart-legend-val">{entry.value}</span>
+                      </div>
+                    ))}
+                    {attendanceData.length === 0 && (
+                      <p className="chart-empty">No data yet.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Meal Preference Horizontal Bar */}
+              <div className="chart-card">
+                <p className="chart-card-label">Meal Preferences</p>
+                {mealChartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={Math.max(160, mealChartData.length * 52)}>
+                    <BarChart data={mealChartData} layout="vertical" margin={{ left: 8, right: 20, top: 4, bottom: 4 }}>
+                      <XAxis type="number" tick={{ fontSize: 11, fill: '#8A8680' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                      <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: '#1C1C1E' }} axisLine={false} tickLine={false} width={82} />
+                      <Tooltip cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
+                      <Bar dataKey="value" fill="#2D6A4F" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="chart-empty">No meal data yet.</p>
+                )}
+              </div>
+
+              {/* 4. RSVP Response Timeline */}
+              <div className="chart-card">
+                <p className="chart-card-label">RSVP Timeline</p>
+                {timelineData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={timelineData} margin={{ left: 0, right: 16, top: 8, bottom: 4 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE8" vertical={false} />
+                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#8A8680' }} axisLine={false} tickLine={false} />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#8A8680' }} axisLine={false} tickLine={false} width={28} />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="count" stroke="#C9A84C" strokeWidth={2} dot={{ fill: '#C9A84C', r: 3, strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 0 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="chart-empty">No timeline data yet.</p>
+                )}
+              </div>
+
             </div>
           </section>
         )}
