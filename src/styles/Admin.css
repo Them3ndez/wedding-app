@@ -1046,6 +1046,7 @@
   .admin-sidebar-nav {
     display: flex;          /* keep flex so animation works */
     flex-direction: column;
+    align-items: stretch;   /* override 768px align-items: center */
     gap: 0;
     padding: 0 20px;
     max-height: 0;
