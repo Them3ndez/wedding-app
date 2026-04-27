@@ -7,6 +7,7 @@ import { useThemeTransition } from '../components/TransitionOverlay'
 import Lightbox from '../components/Lightbox'
 import MagneticCard from '../components/MagneticCard'
 import '../styles/MainSite.css'
+import { supabase } from '../lib/supabase'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -229,8 +230,27 @@ export default function MainSite() {
 
   const setField = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+
+    const { error } = await supabase.from('rsvps').insert([{
+      first_name: form.firstName,
+      last_name: form.lastName,
+      email: form.email,
+      attendance: form.attendance,
+      guests: form.guests,
+      meal: form.meal,
+      dietary: form.dietary,
+      song: form.song,
+      message: form.message,
+    }])
+
+    if (error) {
+      console.error('RSVP error:', error)
+      alert('Something went wrong. Please try again.')
+      return
+    }
+
     setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)])
     setSubmitted(true)
   }
