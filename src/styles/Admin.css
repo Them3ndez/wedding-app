@@ -991,11 +991,16 @@
    ══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 480px) {
 
-  /* ── Sidebar: collapse to brand bar + hamburger ──────────────────────────── */
+  /* ── Sidebar: brand bar only, dropdown below ────────────────────────────── */
   .admin-sidebar {
     flex-direction: column;
     height: auto;
-    overflow: visible;  /* allow dropdown to extend below */
+    overflow: visible;
+  }
+
+  /* When open, cast a shadow beneath the whole dropdown */
+  .admin-sidebar--open {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.28);
   }
 
   .admin-sidebar-brand {
@@ -1003,8 +1008,8 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    height: 52px;
-    padding: 0 16px;
+    height: 56px;
+    padding: 0 20px;
     border-right: none;
     border-bottom: 1px solid var(--adm-sidebar-border);
     margin-bottom: 0;
@@ -1014,48 +1019,125 @@
 
   .admin-sidebar-monogram {
     font-size: 1.4rem;
+    letter-spacing: 0.14em;
   }
 
-  /* Show the hamburger button */
+  /* ── Hamburger button: refined, same visual weight as monogram ───────────── */
   .admin-hamburger {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-left: auto;
+    width: 36px;
+    height: 36px;
+    font-size: 1.25rem;
+    font-family: var(--adm-font-serif);
+    border-radius: 6px;
+    color: #7A7A7C;
+    transition: background 0.15s, color 0.15s;
   }
 
-  /* Nav + logout hidden by default; revealed when sidebar--open */
+  .admin-hamburger:hover {
+    background: rgba(255,255,255,0.07);
+    color: #D8D5D0;
+  }
+
+  /* ── Nav dropdown: animate with max-height + opacity + translate ─────────── */
   .admin-sidebar-nav {
-    display: none;
+    display: flex;          /* keep flex so animation works */
     flex-direction: column;
-    padding: 8px 12px 6px;
-    gap: 2px;
+    gap: 0;
+    padding: 0 20px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition:
+      max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity    0.25s ease,
+      transform  0.25s ease,
+      padding    0.35s cubic-bezier(0.4, 0, 0.2, 1);
     background: var(--adm-sidebar);
-    /* shadow so it feels like a dropdown over the page content */
-    box-shadow: 0 6px 24px rgba(0,0,0,0.28);
+    scrollbar-width: none;  /* override 768px rule */
   }
 
   .admin-sidebar--open .admin-sidebar-nav {
-    display: flex;
+    max-height: 400px;
+    opacity: 1;
+    transform: translateY(0);
+    padding: 16px 20px 12px;
   }
 
+  /* ── Nav items: generous, light, spaced ─────────────────────────────────── */
   .admin-nav-item {
     width: 100%;
     text-align: left;
-    padding: 11px 16px;
-    font-size: 0.9rem;
-    border-radius: 8px;
+    padding: 15px 4px;
+    font-size: 0.95rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    border-radius: 0;
     white-space: normal;
+    color: #C0BDB8;
+    border-bottom: 1px solid rgba(255,255,255,0.055);
   }
 
+  .admin-nav-item:last-child {
+    border-bottom: none;
+  }
+
+  .admin-nav-item:hover {
+    background: transparent;
+    color: #F0EDE8;
+  }
+
+  /* Active item: gold left-border accent, no filled background */
+  .admin-nav-item--active {
+    background: transparent;
+    color: var(--adm-accent);
+    font-weight: 400;
+    border-left: 2px solid var(--adm-accent);
+    padding-left: 12px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Logout button: separated by a top divider, animated with nav ────────── */
   .admin-logout-btn {
-    display: none;
-    margin: 4px 12px 12px;
-    color: #A8A5A0;
-    border-color: #3A3A3C;
+    display: block;         /* override tablet's flex-item display */
+    flex-shrink: unset;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    margin: 0 20px;
+    padding: 0 4px;
+    border: none;
+    border-top: 1px solid transparent;
+    color: #6A6A6C;
+    font-size: 0.88rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
     text-align: left;
+    border-radius: 0;
+    white-space: nowrap;
+    transition:
+      max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.04s,
+      opacity    0.25s ease 0.04s,
+      margin     0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      padding    0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 0.25s ease 0.04s;
   }
 
   .admin-sidebar--open .admin-logout-btn {
-    display: block;
+    max-height: 72px;
+    opacity: 1;
+    margin: 0 20px 18px;
+    padding: 18px 4px 4px;
+    border-top-color: rgba(255,255,255,0.08);
+  }
+
+  .admin-logout-btn:hover {
+    border-color: transparent; /* suppress red hover at 480px */
+    color: #C97060;
   }
 
   /* ── Stats: single column ───────────────────────────────────────────────── */
