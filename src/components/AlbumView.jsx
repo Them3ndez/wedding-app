@@ -76,9 +76,6 @@ export default function AlbumView({ album, onClose }) {
 
       {/* Photo stage */}
       <div className="av-stage">
-        <button className="av-stage-back" onClick={onClose} aria-label="Back">
-          ← Back
-        </button>
         <div ref={trackRef} className="av-track">
           {photos.map((photo, i) =>
             photo.src ? (
@@ -94,6 +91,9 @@ export default function AlbumView({ album, onClose }) {
             )
           )}
         </div>
+        <button className="av-stage-back" onClick={onClose} aria-label="Back">
+          ← Back
+        </button>
       </div>
     </div>
   )

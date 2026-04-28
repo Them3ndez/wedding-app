@@ -249,6 +249,23 @@ export default function MainSite() {
       )
     })
 
+    gsap.utils.toArray('.ms-album-card').forEach((card, i) => {
+      gsap.fromTo(card,
+        { opacity: 0, y: 60 },
+        {
+          opacity: 1, y: 0,
+          duration: 0.7,
+          delay: i * 0.12,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 85%',
+            toggleActions: 'play none none reverse'
+          }
+        }
+      )
+    })
+
     return () => ScrollTrigger.getAll().forEach(t => t.kill())
   }, [])
 
