@@ -4,8 +4,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import WeddingConcierge from '../components/WeddingConcierge'
 import { useThemeTransition } from '../components/TransitionOverlay'
-import Lightbox from '../components/Lightbox'
-import MagneticCard from '../components/MagneticCard'
+import AlbumView from '../components/AlbumView'
 import '../styles/MainSite.css'
 import { supabase } from '../lib/supabase'
 
@@ -29,7 +28,7 @@ const THEMES = [
 const INFO_CARDS = [
   {
     title: 'Date & Time',
-    lines: ['February 7, 2027', 'Ceremony at 3:30 PM'],
+    lines: ['February 7, 2027', 'Ceremony at 1:30 PM'],
   },
   {
     title: 'Venue',
@@ -46,11 +45,11 @@ const INFO_CARDS = [
 ]
 
 const TIMELINE = [
-  { time: '3:30 PM',  event: 'Ceremony' },
-  { time: '4:00 PM',  event: 'Doors Open' },
-  { time: '4:45 PM',  event: 'Cocktail Hour' },
-  { time: '6:30 PM',  event: 'Dinner Reception' },
-  { time: '11:00 PM', event: 'Last Dance' },
+  { time: '1:30 PM',  event: 'Ceremony' },
+  { time: '2:45 PM',  event: 'Doors Open' },
+  { time: '3:00 PM',  event: 'Cocktail Hour' },
+  { time: '5:00 PM',  event: 'Dinner Reception' },
+  { time: '8:00 PM', event: 'Dance Party' },
 ]
 
 const FAQS = [
@@ -93,12 +92,42 @@ const PHOTOS = [
   { src: '/images/gallery/IMG_3366.JPG', alt: 'Wendy & Guillermo' },
 ]
 
-const GALLERY_SLOTS = 8
+const ALBUMS = [
+  { id: 1, name: 'Our Story',  cover: '/images/gallery/IMG_3366.JPG', photos: PHOTOS },
+  { id: 2, name: 'Engagement', cover: null, photos: [] },
+  { id: 3, name: 'Together',   cover: null, photos: [] },
+  { id: 4, name: 'Adventures', cover: null, photos: [] },
+]
 
 const FORM_INIT = {
   firstName: '', lastName: '', email: '',
   attendance: '', guests: '', meal: '',
   dietary: '', song: '', message: '',
+}
+
+/* ── Album card with inner image pan ────────────────────────────────────── */
+function AlbumCard({ album, onOpen }) {
+  return (
+    <div className="ms-album-card" onClick={onOpen}>
+      <div className="ms-album-thumb">
+        {album.cover ? (
+          <div className="ms-album-hover-wrap">
+            <img
+              src={album.cover}
+              alt={album.name}
+              className="ms-album-img"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+            />
+          </div>
+        ) : (
+          <div className="ms-album-ph">
+            <span>{album.name}</span>
+          </div>
+        )}
+      </div>
+      <p className="ms-album-label">{album.name}</p>
+    </div>
+  )
 }
 
 export default function MainSite() {
@@ -111,7 +140,7 @@ export default function MainSite() {
   const [form, setForm]                 = useState(FORM_INIT)
   const [submitted, setSubmitted]       = useState(false)
   const [quote, setQuote]               = useState('')
-  const [lightboxIdx, setLightboxIdx]   = useState(null)
+  const [openAlbum, setOpenAlbum]       = useState(null)
   const themeDropdownRef                = useRef(null)
 
   // Close menu on outside click
@@ -382,7 +411,7 @@ export default function MainSite() {
 
             <div className="ms-dresscode" data-reveal>
               <span className="ms-dresscode-label">Dress Code</span>
-              <span className="ms-dresscode-value">Black Tie Optional</span>
+              <span className="ms-dresscode-value">Business Casual</span>
             </div>
           </div>
         </section>
@@ -498,42 +527,21 @@ export default function MainSite() {
               <p className="ms-section-eye">Our Story</p>
               <h2 className="ms-section-title">Gallery</h2>
             </div>
-            <div className="ms-gallery-grid" data-reveal>
-              {/* Real photos */}
-              {PHOTOS.map((photo, i) => (
-                <MagneticCard
-                  key={`photo-${i}`}
-                  className="ms-gallery-item ms-gallery-item--photo"
-                  onClick={() => setLightboxIdx(i)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <img
-                    src={photo.src}
-                    alt={photo.alt}
-                    className="ms-gallery-img"
-                  />
-                </MagneticCard>
-              ))}
-              {/* Placeholder slots for remaining space */}
-              {Array.from({ length: GALLERY_SLOTS - PHOTOS.length }, (_, i) => (
-                <div key={`ph-${i}`} className="ms-gallery-item">
-                  <div className="ms-gallery-ph">
-                    <span>Photo {PHOTOS.length + i + 1}</span>
-                  </div>
-                </div>
+            <div className="ms-album-grid" data-reveal>
+              {ALBUMS.map(album => (
+                <AlbumCard
+                  key={album.id}
+                  album={album}
+                  onOpen={() => setOpenAlbum(album)}
+                />
               ))}
             </div>
           </div>
         </section>
 
-        {/* ── LIGHTBOX ── */}
-        {lightboxIdx !== null && PHOTOS.length > 0 && (
-          <Lightbox
-            photos={PHOTOS}
-            initialIndex={lightboxIdx}
-            onClose={() => setLightboxIdx(null)}
-            accent="#ffffff"
-          />
+        {/* ── ALBUM VIEW ── */}
+        {openAlbum && (
+          <AlbumView album={openAlbum} onClose={() => setOpenAlbum(null)} />
         )}
 
         {/* ── FAQ ── */}

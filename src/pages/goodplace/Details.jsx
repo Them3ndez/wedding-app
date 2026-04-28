@@ -28,29 +28,29 @@ const INFO_CARDS = [
 
 const TIMELINE = [
   {
-    time: '3:30 PM',
+    time: '1:30 PM',
     event: 'The Arrival',
     note: 'Your Points Have Been Verified',
   },
   {
-    time: '4:00 PM',
+    time: '2:45 PM',
     event: 'The Ceremony',
     note: 'The Vow Clause, Section 1',
   },
   {
-    time: '4:45 PM',
+    time: '3:00 PM',
     event: 'Cocktail Hour',
     note: 'The Frozen Yogurt Approximation 🍦',
     isFroyo: true,
   },
   {
-    time: '6:30 PM',
+    time: '5:00 PM',
     event: 'Dinner Reception',
     note: 'Janet has prepared the menu',
   },
   {
-    time: '11:00 PM',
-    event: 'Final Dance',
+    time: '8:00 PM',
+    event: 'Dance Party',
     note: 'Everything is Still Fine',
   },
 ]
@@ -162,8 +162,7 @@ export default function Details() {
       <div className="gp-dresscode">
         <p className="gp-dresscode-title">Dress Code Directive</p>
         <p className="gp-dresscode-text">
-          Elegant attire befitting The Good Place. No bad place energy.
-          Sashes optional but encouraged.
+          Business Casual — attire befitting a resident of The Good Place. Smart, tasteful, and free of bad place energy. Sashes optional but encouraged.
           <br />
           <em style={{ color: 'rgba(26,26,26,.32)', fontSize: '.82rem' }}>
             (Eleanor has been informed. She is wearing jeans anyway.)

@@ -9,13 +9,13 @@ const schedule = [
   { time: '16:00', event: 'The Ceremony',   desc: 'Wendy & Guillermo exchange their sacred vows beneath the open Jalisco sky, before the eyes of all the realm.' },
   { time: '16:45', event: 'The Toast',      desc: 'Raise your goblets to the newly wedded. Spiced wines, fine meads, and canapés await in the courtyard.' },
   { time: '18:30', event: 'The Feast',      desc: 'The Great Hall opens for a royal banquet — a spread worthy of Highgarden, prepared by the finest kitchens of Mascota.' },
-  { time: '23:00', event: 'The Last Dance', desc: 'The night draws to its close with one final revel. Dance until the torches burn low and the stars claim the sky.' },
+  { time: '20:00', event: 'The Dance Party', desc: 'The night draws to its close with one final revel. Dance until the torches burn low and the stars claim the sky.' },
 ]
 
 const info = [
   {
     title: 'Dress Code',
-    text: 'Realm Formal. Deep velvets, rich brocades, and jewel tones befitting the Seven Kingdoms — burgundy, forest green, midnight blue, and gold are most welcome. Crowns are encouraged; armour respectfully declined.',
+    text: 'Courtly Business Casual. Present yourself with honour — smart attire fit for the Small Council. Jewel tones of the Seven Kingdoms are most welcome. Crowns are encouraged; armour respectfully declined.',
   },
   {
     title: 'The Venue',

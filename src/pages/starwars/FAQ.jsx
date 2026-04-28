@@ -8,7 +8,7 @@ gsap.registerPlugin(ScrollTrigger)
 const faqs = [
   {
     q: 'What is the dress code?',
-    a: 'Galactic Formal. We encourage elegant attire in dark tones, metallics, and celestial accents. Feel free to add a subtle nod to the galaxy — just leave the Stormtrooper armour at home.',
+    a: 'Galactic Business Casual. Smart attire in dark tones, metallics, and celestial accents is most fitting. A subtle nod to the galaxy is always welcome — just leave the Stormtrooper armour at home.',
   },
   {
     q: 'How do I get to Mascota, Jalisco?',

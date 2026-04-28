@@ -8,7 +8,7 @@ gsap.registerPlugin(ScrollTrigger)
 const faqs = [
   {
     q: 'What is the dress code?',
-    a: "Realm Formal. We welcome the velvets and brocades of the Seven Kingdoms — deep burgundy, forest green, midnight blue, and gold are most fitting. A subtle sigil or house colours are encouraged. Armour is respectfully declined.",
+    a: "Courtly Business Casual — attire fit for the Small Council. Smart and dignified, in the jewel tones of the Seven Kingdoms if you wish. A subtle sigil or house colours are encouraged. Armour is respectfully declined.",
   },
   {
     q: 'How do I reach Mascota, Jalisco?',

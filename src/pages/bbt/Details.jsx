@@ -13,11 +13,11 @@ const INFO_CARDS = [
 ]
 
 const TIMELINE = [
-  { time: '3:30 PM', event: 'Guests Arrive', note: 'Knock knock knock, Wendy!' },
-  { time: '4:00 PM', event: 'The Ceremony Commences', note: 'The Vow Iteration' },
-  { time: '4:45 PM', event: 'Cocktail Hour', note: 'The Social Interaction Protocol' },
-  { time: '6:30 PM', event: 'Dinner Reception', note: 'The Cheesecake Factory Approximation' },
-  { time: '11:00 PM', event: 'Last Dance', note: 'The Farewell Theorem' },
+  { time: '1:30 PM', event: 'Guests Arrive', note: 'Knock knock knock, Wendy!' },
+  { time: '2:45 PM', event: 'The Ceremony Commences', note: 'The Vow Iteration' },
+  { time: '3:00 PM', event: 'Cocktail Hour', note: 'The Social Interaction Protocol' },
+  { time: '5:00 PM', event: 'Dinner Reception', note: 'The Cheesecake Factory Approximation' },
+  { time: '8:00 PM', event: 'Dance Party', note: 'The Farewell Theorem' },
 ]
 
 export default function Details() {
@@ -94,7 +94,7 @@ export default function Details() {
       <div className="bbt-dresscode">
         <p className="bbt-dresscode-title">Dress Code Directive</p>
         <p className="bbt-dresscode-text">
-          Smart Casual — No Flash costumes please. Bowties are acceptable. Superhero t-shirts are not.
+          Business Casual — The dress code has been peer-reviewed and approved. Blazers encouraged. Bowties are statistically optimal. Superhero t-shirts are not.
           <br />
           <em style={{ color: 'rgba(232,232,240,.35)', fontSize: '.8rem' }}>
             (Sheldon has been informed. He is wearing a Flash t-shirt anyway.)

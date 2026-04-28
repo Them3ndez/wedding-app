@@ -15,7 +15,7 @@ const schedule = [
 const info = [
   {
     title: 'Dress Code',
-    text: 'Galactic Formal. Think elegant attire — dark tones, metallics, and celestial accents welcome. Leave the Stormtrooper armor at home.',
+    text: 'Galactic Business Casual. Smart attire worthy of the Rebel Alliance — dark tones, metallics, and celestial accents are welcome. Leave the Stormtrooper armor at home.',
   },
   {
     title: 'Venue',

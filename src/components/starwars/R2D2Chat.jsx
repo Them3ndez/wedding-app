@@ -5,11 +5,11 @@ const SYSTEM = `You are R2-D2 from Star Wars. Start EVERY response with beeps in
 Couple: Wendy and Guillermo
 Date: February 7 2027
 Venue: Quinta el Pedregal, Mascota, Jalisco Mexico
-Ceremony: 3:30 PM, doors open 4:00 PM
-Cocktail Hour: 4:45 PM
-Dinner Reception: 6:30 PM
-Last Dance: 11:00 PM
-Dress Code: Black Tie Optional
+Ceremony: 1:30 PM, doors open 2:45 PM
+Cocktail Hour: 3:00 PM
+Dinner Reception: 5:00 PM
+Dance Party: 8:00 PM
+Dress Code: Galactic Business Casual
 Airport: Puerto Vallarta PVR ~2.5 hours away
 Shuttle: From hotel at 3:00 PM and 3:30 PM
 Parking: Free on-site
