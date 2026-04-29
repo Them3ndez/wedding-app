@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import '../../styles/Admin.css'
@@ -15,6 +15,63 @@ const MEAL_COLORS = {
 }
 
 const ATTENDANCE_COLORS = { Confirmed: '#2D6A4F', Declined: '#A63D2F', Maybe: '#B07D2D' }
+
+const CATEGORIES = ['venue', 'catering', 'flowers', 'attire', 'travel', 'other']
+
+/* ── Todo Item ──────────────────────────────────────────────────────────── */
+function TodoItem({ todo, onToggle, onDelete, onSaveNotes }) {
+  const [expanded, setExpanded]     = useState(false)
+  const [localNotes, setLocalNotes] = useState(todo.notes || '')
+  const isFocused = useRef(false)
+
+  useEffect(() => {
+    if (!isFocused.current) setLocalNotes(todo.notes || '')
+  }, [todo.notes])
+
+  const handleNotesFocus = () => { isFocused.current = true }
+
+  const handleNotesBlur = () => {
+    isFocused.current = false
+    if (localNotes !== (todo.notes || '')) onSaveNotes(todo.id, localNotes)
+  }
+
+  return (
+    <div className={`todo-item${todo.completed ? ' todo-item--done' : ''}`}>
+      <div className="todo-item-main">
+        <button className="todo-check" onClick={() => onToggle(todo)} aria-label="Toggle complete">
+          {todo.completed && '✓'}
+        </button>
+        {todo.category && (
+          <span className={`todo-cat todo-cat--${todo.category}`}>{todo.category}</span>
+        )}
+        <span className="todo-task">{todo.task}</span>
+        <button
+          className={`todo-notes-btn${expanded ? ' todo-notes-btn--active' : ''}${todo.notes ? ' todo-notes-btn--has-note' : ''}`}
+          onClick={() => setExpanded(e => !e)}
+          aria-label="Toggle notes"
+          title={todo.notes ? 'View/edit note' : 'Add a note'}
+        >
+          {todo.notes ? '📝' : 'note'}
+        </button>
+        <button className="todo-delete" onClick={() => onDelete(todo.id)} aria-label="Delete task">✕</button>
+      </div>
+      {expanded && (
+        <div className="todo-notes-wrap">
+          <textarea
+            className="todo-notes-input"
+            placeholder="Add a note…"
+            value={localNotes}
+            onChange={e => setLocalNotes(e.target.value)}
+            onFocus={handleNotesFocus}
+            onBlur={handleNotesBlur}
+            rows={2}
+            autoFocus
+          />
+        </div>
+      )}
+    </div>
+  )
+}
 
 /* ── Confirmation Modal ─────────────────────────────────────────────────── */
 function ConfirmModal({ message, onConfirm, onCancel, loading }) {
@@ -40,6 +97,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate()
   const [guests, setGuests] = useState([])
   const [rsvps, setRsvps] = useState([])
+  const [todos, setTodos] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState('overview')
 
@@ -55,6 +113,10 @@ export default function AdminDashboard() {
   // Modal state
   const [modal, setModal] = useState(null) // { message, onConfirm }
   const [deleting, setDeleting] = useState(false)
+
+  // Todo form
+  const [newTodo, setNewTodo] = useState({ task: '', category: '' })
+  const [addingTodo, setAddingTodo] = useState(false)
 
   // Mobile nav
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
@@ -73,14 +135,21 @@ export default function AdminDashboard() {
     setSelectedRsvps(new Set())
   }, [activeSection])
 
+  const fetchTodos = async () => {
+    const { data } = await supabase.from('todos').select('*').order('created_at', { ascending: true })
+    setTodos(data || [])
+  }
+
   const fetchData = async () => {
     setLoading(true)
-    const [{ data: guestData }, { data: rsvpData }] = await Promise.all([
+    const [{ data: guestData }, { data: rsvpData }, { data: todoData }] = await Promise.all([
       supabase.from('guests').select('*').order('last_name'),
       supabase.from('rsvps').select('*').order('created_at', { ascending: false }),
+      supabase.from('todos').select('*').order('created_at', { ascending: true }),
     ])
     setGuests(guestData || [])
     setRsvps(rsvpData || [])
+    setTodos(todoData || [])
     setLoading(false)
   }
 
@@ -96,6 +165,49 @@ export default function AdminDashboard() {
       fetchData()
     }
     setAddingGuest(false)
+  }
+
+  /* ── Todos real-time sync ─────────────────────────────────────────────── */
+  useEffect(() => {
+    const channel = supabase
+      .channel('todos-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'todos' }, fetchTodos)
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleAddTodo = async (e) => {
+    e.preventDefault()
+    if (!newTodo.task.trim()) return
+    setAddingTodo(true)
+    const { data, error } = await supabase
+      .from('todos')
+      .insert([{ task: newTodo.task.trim(), category: newTodo.category || null, completed: false, notes: null }])
+      .select()
+      .single()
+    if (error) {
+      alert('Error adding task: ' + error.message)
+    } else {
+      setTodos(prev => [...prev, data])
+      setNewTodo({ task: '', category: '' })
+    }
+    setAddingTodo(false)
+  }
+
+  const handleToggleTodo = async (todo) => {
+    const updated = { ...todo, completed: !todo.completed }
+    setTodos(prev => prev.map(t => t.id === todo.id ? updated : t))
+    await supabase.from('todos').update({ completed: updated.completed }).eq('id', todo.id)
+  }
+
+  const handleDeleteTodo = async (id) => {
+    setTodos(prev => prev.filter(t => t.id !== id))
+    await supabase.from('todos').delete().eq('id', id)
+  }
+
+  const handleSaveNotes = async (id, notes) => {
+    setTodos(prev => prev.map(t => t.id === id ? { ...t, notes } : t))
+    await supabase.from('todos').update({ notes: notes || null }).eq('id', id)
   }
 
   const handleLogout = () => {
@@ -225,7 +337,11 @@ export default function AdminDashboard() {
     { id: 'guests', label: 'Guest List' },
     { id: 'rsvps', label: 'RSVPs' },
     { id: 'meals', label: 'Meal Choices' },
+    { id: 'todos', label: 'To-Do List' },
   ]
+
+  const pendingTodos   = todos.filter(t => !t.completed)
+  const completedTodos = todos.filter(t =>  t.completed)
 
   if (loading) {
     return (
@@ -615,6 +731,59 @@ export default function AdminDashboard() {
             </div>
           </section>
         )}
+        {/* To-Do List */}
+        {activeSection === 'todos' && (
+          <section className="admin-section">
+            <form className="todo-add-form" onSubmit={handleAddTodo}>
+              <input
+                className="admin-input todo-task-input"
+                placeholder="Add a new task…"
+                value={newTodo.task}
+                onChange={e => setNewTodo(t => ({ ...t, task: e.target.value }))}
+                required
+              />
+              <select
+                className="admin-input todo-cat-select"
+                value={newTodo.category}
+                onChange={e => setNewTodo(t => ({ ...t, category: e.target.value }))}
+              >
+                <option value="">Category (optional)</option>
+                {CATEGORIES.map(c => (
+                  <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
+                ))}
+              </select>
+              <button type="submit" className="admin-add-btn" disabled={addingTodo || !newTodo.task.trim()}>
+                {addingTodo ? 'Adding…' : '+ Add Task'}
+              </button>
+            </form>
+
+            {todos.length === 0 && (
+              <p className="admin-table-empty" style={{ border: '1px solid var(--adm-border)', borderRadius: 12, margin: 0 }}>
+                No tasks yet. Add something above.
+              </p>
+            )}
+
+            {pendingTodos.length > 0 && (
+              <div className="todo-list">
+                {pendingTodos.map(todo => (
+                  <TodoItem key={todo.id} todo={todo} onToggle={handleToggleTodo} onDelete={handleDeleteTodo} onSaveNotes={handleSaveNotes} />
+                ))}
+              </div>
+            )}
+
+            {completedTodos.length > 0 && (
+              <>
+                <p className="todo-section-label">Completed · {completedTodos.length}</p>
+                <div className="todo-list todo-list--done">
+                  {completedTodos.map(todo => (
+                    <TodoItem key={todo.id} todo={todo} onToggle={handleToggleTodo} onDelete={handleDeleteTodo} onSaveNotes={handleSaveNotes} />
+                  ))}
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
       </main>
     </div>
   )
