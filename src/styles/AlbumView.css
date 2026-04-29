@@ -152,6 +152,23 @@
 }
 
 
+/* ── Touch: native horizontal scroll ───────────────────────────────────── */
+.av-track--touch {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  scroll-snap-type: x mandatory;
+  transform: none !important;
+  /* override any GSAP inline transform */
+  padding: 0 5vw;
+}
+
+.av-track--touch .av-photo {
+  scroll-snap-align: center;
+  flex-shrink: 0;
+}
+
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .av-topbar {

@@ -5,6 +5,9 @@ import '../styles/AlbumView.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
+const isTouch = () =>
+  'ontouchstart' in window || navigator.maxTouchPoints > 0
+
 export default function AlbumView({ album, onClose }) {
   const trackRef = useRef(null)
 
@@ -21,12 +24,18 @@ export default function AlbumView({ album, onClose }) {
     return () => document.removeEventListener('keydown', handler)
   }, [onClose])
 
-  /* ── Wheel-driven horizontal scroll — starts right, moves left ── */
+  /* ── Scroll: GSAP on desktop, native on touch ── */
   useEffect(() => {
     const track = trackRef.current
     if (!track) return
 
-    // First image right-aligned: its right edge flush with the viewport
+    if (isTouch()) {
+      // Native horizontal scroll — CSS handles the rest
+      track.classList.add('av-track--touch')
+      return () => track.classList.remove('av-track--touch')
+    }
+
+    // GSAP wheel scroll — starts right, moves left
     const getInitialX = () => {
       const firstPhoto = track.querySelector('.av-photo')
       const padLeft = parseFloat(getComputedStyle(track).paddingLeft) || 0
