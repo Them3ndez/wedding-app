@@ -298,7 +298,6 @@ export default function AdminDashboard() {
     await fn()
     setDeleting(false)
     setModal(null)
-    fetchData()
   }
 
   // Guests
@@ -307,8 +306,9 @@ export default function AdminDashboard() {
       `Are you sure you want to remove ${g.first_name} ${g.last_name} from the guest list? This cannot be undone.`,
       () => runDelete(async () => {
         const { error } = await supabase.from('guests').delete().eq('id', g.id)
-        if (error) alert('Error: ' + error.message)
-        else setSelectedGuests(prev => { const s = new Set(prev); s.delete(g.id); return s })
+        if (error) { alert('Error: ' + error.message); return }
+        setGuests(prev => prev.filter(x => x.id !== g.id))
+        setSelectedGuests(prev => { const s = new Set(prev); s.delete(g.id); return s })
       })
     )
   }
@@ -319,8 +319,9 @@ export default function AdminDashboard() {
       `Are you sure you want to remove ${ids.length} guest${ids.length > 1 ? 's' : ''} from the guest list? This cannot be undone.`,
       () => runDelete(async () => {
         const { error } = await supabase.from('guests').delete().in('id', ids)
-        if (error) alert('Error: ' + error.message)
-        else setSelectedGuests(new Set())
+        if (error) { alert('Error: ' + error.message); return }
+        setGuests(prev => prev.filter(x => !ids.includes(x.id)))
+        setSelectedGuests(new Set())
       })
     )
   }
@@ -331,8 +332,9 @@ export default function AdminDashboard() {
       `Are you sure you want to delete this RSVP from ${r.first_name} ${r.last_name}? This cannot be undone.`,
       () => runDelete(async () => {
         const { error } = await supabase.from('rsvps').delete().eq('id', r.id)
-        if (error) alert('Error: ' + error.message)
-        else setSelectedRsvps(prev => { const s = new Set(prev); s.delete(r.id); return s })
+        if (error) { alert('Error: ' + error.message); return }
+        setRsvps(prev => prev.filter(x => x.id !== r.id))
+        setSelectedRsvps(prev => { const s = new Set(prev); s.delete(r.id); return s })
       })
     )
   }
@@ -343,8 +345,9 @@ export default function AdminDashboard() {
       `Are you sure you want to delete ${ids.length} selected RSVP${ids.length > 1 ? 's' : ''}? This cannot be undone.`,
       () => runDelete(async () => {
         const { error } = await supabase.from('rsvps').delete().in('id', ids)
-        if (error) alert('Error: ' + error.message)
-        else setSelectedRsvps(new Set())
+        if (error) { alert('Error: ' + error.message); return }
+        setRsvps(prev => prev.filter(x => !ids.includes(x.id)))
+        setSelectedRsvps(new Set())
       })
     )
   }
