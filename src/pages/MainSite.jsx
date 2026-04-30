@@ -297,6 +297,15 @@ export default function MainSite() {
       return
     }
 
+    if (form.email) {
+      const fullName = [form.firstName, form.lastName].filter(Boolean).join(' ')
+      fetch('/api/send-rsvp-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: fullName, email: form.email, attending: form.attendance }),
+      }).catch(() => {})
+    }
+
     setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)])
     setSubmitted(true)
   }

@@ -42,8 +42,13 @@ export default function RSVP() {
     e.preventDefault()
     setSubmitting(true)
 
+    const nameParts = form.name.trim().split(/\s+/)
+    const first_name = nameParts[0] || form.name
+    const last_name = nameParts.slice(1).join(' ') || null
+
     const { error } = await supabase.from('rsvps').insert([{
-      name: form.name,
+      first_name,
+      last_name,
       email: form.email || null,
       attendance: form.attendance || null,
       guests: 1,
@@ -53,7 +58,9 @@ export default function RSVP() {
       message: form.message || null,
     }])
 
-    if (!error && form.email) {
+    if (error) {
+      console.error('RSVP insert error:', error)
+    } else if (form.email) {
       await sendConfirmationEmail(form.name, form.email, form.attendance)
     }
 
