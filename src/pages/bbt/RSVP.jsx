@@ -13,19 +13,22 @@ const SUCCESS_MSGS = [
 ]
 
 const FORM_INIT = {
-  name: '', email: '', attendance: '', meal: '',
+  firstName: '', lastName: '', email: '', attendance: '', meal: '',
   dietary: '', song: '', message: '',
 }
 
 async function sendConfirmationEmail(name, email, attending) {
+  console.log('[BBT] sendConfirmationEmail called with:', { name, email, attending })
   try {
-    await fetch('/api/send-rsvp-email', {
+    const res = await fetch('/api/send-rsvp-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, attending }),
     })
-  } catch (_) {
-    // email failure is non-blocking
+    const json = await res.json().catch(() => null)
+    console.log('[BBT] /api/send-rsvp-email response:', res.status, json)
+  } catch (err) {
+    console.error('[BBT] /api/send-rsvp-email fetch error:', err)
   }
 }
 
@@ -40,12 +43,14 @@ export default function RSVP() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    console.log('[BBT] handleSubmit triggered, form state:', form)
     setSubmitting(true)
 
-    const nameParts = form.name.trim().split(/\s+/)
-    const first_name = nameParts[0] || form.name
-    const last_name = nameParts.slice(1).join(' ') || null
+    const first_name = form.firstName.trim()
+    const last_name = form.lastName.trim()
+    const fullName = [first_name, last_name].filter(Boolean).join(' ')
 
+    console.log('[BBT] Inserting into Supabase:', { first_name, last_name, email: form.email, attendance: form.attendance })
     const { error } = await supabase.from('rsvps').insert([{
       first_name,
       last_name,
@@ -57,11 +62,15 @@ export default function RSVP() {
       song: form.song || null,
       message: form.message || null,
     }])
+    console.log('[BBT] Supabase insert result — error:', error)
 
     if (error) {
-      console.error('RSVP insert error:', error)
+      console.error('[BBT] Supabase insert failed, skipping email:', error)
     } else if (form.email) {
-      await sendConfirmationEmail(form.name, form.email, form.attendance)
+      console.log('[BBT] Insert succeeded, calling sendConfirmationEmail')
+      await sendConfirmationEmail(fullName, form.email, form.attendance)
+    } else {
+      console.log('[BBT] Insert succeeded but no email address provided — skipping email')
     }
 
     setMsg(SUCCESS_MSGS[Math.floor(Math.random() * SUCCESS_MSGS.length)])
@@ -111,15 +120,27 @@ export default function RSVP() {
         </div>
       ) : (
         <form className="bbt-rsvp-form" onSubmit={handleSubmit}>
-          <div className="bbt-form-group">
-            <label className="bbt-form-label">Full Legal Name</label>
-            <input
-              className="bbt-form-input"
-              required
-              placeholder="As it appears in the Roommate Agreement"
-              value={form.name}
-              onChange={setField('name')}
-            />
+          <div className="bbt-form-row">
+            <div className="bbt-form-group">
+              <label className="bbt-form-label">First Name</label>
+              <input
+                className="bbt-form-input"
+                required
+                placeholder="As per the Roommate Agreement"
+                value={form.firstName}
+                onChange={setField('firstName')}
+              />
+            </div>
+            <div className="bbt-form-group">
+              <label className="bbt-form-label">Last Name</label>
+              <input
+                className="bbt-form-input"
+                required
+                placeholder="Legal surname"
+                value={form.lastName}
+                onChange={setField('lastName')}
+              />
+            </div>
           </div>
 
           <div className="bbt-form-group">

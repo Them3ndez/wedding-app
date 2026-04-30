@@ -39,8 +39,8 @@ export default function RSVP() {
     setSubmitting(true)
 
     const nameParts = form.name.trim().split(/\s+/)
-    const first_name = nameParts[0] || form.name
-    const last_name = nameParts.slice(1).join(' ') || null
+    const first_name = nameParts.length > 1 ? nameParts.slice(0, -1).join(' ') : nameParts[0]
+    const last_name = nameParts.length > 1 ? nameParts[nameParts.length - 1] : ''
 
     const { error } = await supabase.from('rsvps').insert([{
       first_name,
