@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { supabase } from '../../lib/supabase'
 import JanetBubble from '../../components/goodplace/JanetBubble'
 import CloudLayer from '../../components/goodplace/CloudLayer'
 import GoodPlaceChaos from '../../components/goodplace/GoodPlaceChaos'
@@ -14,11 +15,24 @@ const SUCCESS_MSGS = [
   'As Michael would say: This is going to be so much fun. For real this time.',
 ]
 
+async function sendConfirmationEmail(name, email, attending) {
+  try {
+    await fetch('/api/send-rsvp-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, attending }),
+    })
+  } catch (_) {
+    // email failure is non-blocking
+  }
+}
+
 export default function RSVP() {
   const [form, setForm] = useState({
     name: '', email: '', attendance: '', meal: '', song: '', message: '',
   })
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [successMsg] = useState(
     () => SUCCESS_MSGS[Math.floor(Math.random() * SUCCESS_MSGS.length)],
   )
@@ -29,9 +43,27 @@ export default function RSVP() {
     setForm(f => ({ ...f, [name]: value }))
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     if (!form.name || !form.attendance) return
+    setSubmitting(true)
+
+    const { error } = await supabase.from('rsvps').insert([{
+      name: form.name,
+      email: form.email || null,
+      attendance: form.attendance,
+      guests: 1,
+      meal: form.meal || null,
+      dietary: null,
+      song: form.song || null,
+      message: form.message || null,
+    }])
+
+    if (!error && form.email) {
+      await sendConfirmationEmail(form.name, form.email, form.attendance)
+    }
+
+    setSubmitting(false)
     setSubmitted(true)
   }
 
@@ -184,8 +216,8 @@ export default function RSVP() {
           />
         </div>
 
-        <button className="gp-btn gp-btn--primary" type="submit">
-          Secure My Spot
+        <button className="gp-btn gp-btn--primary" type="submit" disabled={submitting}>
+          {submitting ? 'Securing your spot…' : 'Secure My Spot'}
         </button>
       </form>
 

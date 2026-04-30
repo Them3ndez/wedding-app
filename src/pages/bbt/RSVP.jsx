@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { supabase } from '../../lib/supabase'
 import HawkingBubble from '../../components/bbt/HawkingBubble'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -16,17 +17,48 @@ const FORM_INIT = {
   dietary: '', song: '', message: '',
 }
 
+async function sendConfirmationEmail(name, email, attending) {
+  try {
+    await fetch('/api/send-rsvp-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, attending }),
+    })
+  } catch (_) {
+    // email failure is non-blocking
+  }
+}
+
 export default function RSVP() {
   const [form, setForm] = useState(FORM_INIT)
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [msg, setMsg] = useState(null)
   const containerRef = useRef(null)
 
   const setField = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setSubmitting(true)
+
+    const { error } = await supabase.from('rsvps').insert([{
+      name: form.name,
+      email: form.email || null,
+      attendance: form.attendance || null,
+      guests: 1,
+      meal: form.meal || null,
+      dietary: form.dietary || null,
+      song: form.song || null,
+      message: form.message || null,
+    }])
+
+    if (!error && form.email) {
+      await sendConfirmationEmail(form.name, form.email, form.attendance)
+    }
+
     setMsg(SUCCESS_MSGS[Math.floor(Math.random() * SUCCESS_MSGS.length)])
+    setSubmitting(false)
     setSubmitted(true)
   }
 
@@ -158,8 +190,8 @@ export default function RSVP() {
             />
           </div>
 
-          <button type="submit" className="bbt-btn bbt-btn--primary">
-            Transmit Response
+          <button type="submit" className="bbt-btn bbt-btn--primary" disabled={submitting}>
+            {submitting ? 'Transmitting…' : 'Transmit Response'}
           </button>
         </form>
       )}

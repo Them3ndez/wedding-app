@@ -1,17 +1,31 @@
 import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { supabase } from '../../lib/supabase'
 import R2D2Chat from '../../components/starwars/R2D2Chat'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const meals = ['Nerf Bird', 'Mon Calamari Fillet', 'Endor Harvest Risotto', 'Blue Milk']
 
+async function sendConfirmationEmail(name, email, attending) {
+  try {
+    await fetch('/api/send-rsvp-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, attending }),
+    })
+  } catch (_) {
+    // email failure is non-blocking
+  }
+}
+
 export default function RSVP() {
   const [submitted, setSubmitted] = useState(false)
   const [attending, setAttending] = useState(null)
   const [checked, setChecked] = useState([])
   const [form, setForm] = useState({ name: '', email: '', guests: '1', song: '', message: '' })
+  const [submitting, setSubmitting] = useState(false)
   const containerRef = useRef(null)
 
   const toggle = (item) =>
@@ -20,8 +34,27 @@ export default function RSVP() {
   const change = (e) =>
     setForm(f => ({ ...f, [e.target.name]: e.target.value }))
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault()
+    if (!attending) return
+    setSubmitting(true)
+
+    const { error } = await supabase.from('rsvps').insert([{
+      name: form.name,
+      email: form.email,
+      attendance: attending,
+      guests: parseInt(form.guests, 10),
+      meal: checked.join(', ') || null,
+      dietary: null,
+      song: form.song || null,
+      message: form.message || null,
+    }])
+
+    if (!error && form.email) {
+      await sendConfirmationEmail(form.name, form.email, attending)
+    }
+
+    setSubmitting(false)
     setSubmitted(true)
   }
 
@@ -177,8 +210,8 @@ export default function RSVP() {
           />
         </div>
 
-        <button type="submit" className="rsvp-submit" disabled={!attending}>
-          Send Transmission
+        <button type="submit" className="rsvp-submit" disabled={!attending || submitting}>
+          {submitting ? 'Sending…' : 'Send Transmission'}
         </button>
       </form>
       <R2D2Chat />
