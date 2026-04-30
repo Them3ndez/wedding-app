@@ -779,6 +779,99 @@
   color: var(--adm-red);
 }
 
+/* ── Edit Row Button ────────────────────────────────────────────────────── */
+.admin-edit-row-btn {
+  padding: 4px 12px;
+  background: none;
+  border: 1px solid var(--adm-border);
+  border-radius: 6px;
+  color: var(--adm-text-muted);
+  font-family: var(--adm-font);
+  font-size: 0.78rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  margin-right: 6px;
+}
+
+.admin-edit-row-btn:hover {
+  background: rgba(45, 106, 79, 0.07);
+  border-color: rgba(45, 106, 79, 0.35);
+  color: var(--adm-accent);
+}
+
+/* ── Edit Guest Modal ───────────────────────────────────────────────────── */
+.admin-edit-modal-card {
+  max-width: 560px;
+  width: 92%;
+}
+
+.admin-edit-modal-title {
+  font-family: var(--adm-font-serif);
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--adm-text);
+  margin: 0 0 24px;
+  letter-spacing: 0.02em;
+}
+
+.admin-edit-modal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.admin-edit-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+
+.admin-edit-modal-row .admin-edit-modal-field {
+  margin-bottom: 0;
+}
+
+.admin-edit-modal-label {
+  font-family: var(--adm-font);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--adm-text-muted);
+}
+
+.admin-edit-modal-input {
+  padding: 10px 13px;
+  border: 1px solid var(--adm-border);
+  border-radius: 8px;
+  font-family: var(--adm-font);
+  font-size: 0.9rem;
+  color: var(--adm-text);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-edit-modal-input:focus {
+  border-color: var(--adm-accent);
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+}
+
+.admin-edit-modal-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+.admin-edit-modal-actions {
+  margin-top: 28px;
+  justify-content: flex-end;
+}
+
 /* ── Checkbox column ────────────────────────────────────────────────────── */
 .admin-th-check,
 .admin-td-check {
@@ -789,7 +882,7 @@
 
 .admin-th-action,
 .admin-td-action {
-  width: 80px;
+  width: 130px;
   text-align: right;
   padding-right: 16px !important;
 }
@@ -1331,6 +1424,21 @@
 
   .admin-modal-actions .admin-cancel-btn,
   .admin-delete-confirm-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ── Edit Guest Modal ──────────────────────────────────────────────────── */
+  .admin-edit-modal-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-edit-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .admin-edit-modal-actions .admin-cancel-btn,
+  .admin-edit-modal-actions .admin-add-btn {
     width: 100%;
     text-align: center;
   }

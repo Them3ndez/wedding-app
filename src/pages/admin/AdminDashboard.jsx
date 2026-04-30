@@ -18,6 +18,59 @@ const ATTENDANCE_COLORS = { Confirmed: '#2D6A4F', Declined: '#A63D2F', Maybe: '#
 
 const CATEGORIES = ['venue', 'catering', 'flowers', 'attire', 'travel', 'other']
 
+/* ── Edit Guest Modal ───────────────────────────────────────────────────── */
+function EditGuestModal({ guest, onSave, onCancel, saving }) {
+  const [form, setForm] = useState({ ...guest })
+  const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }))
+
+  return (
+    <div className="admin-modal-overlay" onClick={onCancel}>
+      <div className="admin-modal-card admin-edit-modal-card" onClick={e => e.stopPropagation()}>
+        <h2 className="admin-edit-modal-title">Edit Guest</h2>
+
+        <div className="admin-edit-modal-row">
+          <div className="admin-edit-modal-field">
+            <label className="admin-edit-modal-label">First Name</label>
+            <input className="admin-edit-modal-input" value={form.first_name} onChange={set('first_name')} placeholder="First name" />
+          </div>
+          <div className="admin-edit-modal-field">
+            <label className="admin-edit-modal-label">Last Name</label>
+            <input className="admin-edit-modal-input" value={form.last_name} onChange={set('last_name')} placeholder="Last name" />
+          </div>
+        </div>
+
+        <div className="admin-edit-modal-row">
+          <div className="admin-edit-modal-field">
+            <label className="admin-edit-modal-label">Email</label>
+            <input className="admin-edit-modal-input" type="email" value={form.email || ''} onChange={set('email')} placeholder="Email address" />
+          </div>
+          <div className="admin-edit-modal-field">
+            <label className="admin-edit-modal-label">Phone</label>
+            <input className="admin-edit-modal-input" value={form.phone || ''} onChange={set('phone')} placeholder="Phone number" />
+          </div>
+        </div>
+
+        <div className="admin-edit-modal-field">
+          <label className="admin-edit-modal-label">Group</label>
+          <input className="admin-edit-modal-input" value={form.group_name || ''} onChange={set('group_name')} placeholder="Group name" />
+        </div>
+
+        <div className="admin-edit-modal-field">
+          <label className="admin-edit-modal-label">Notes</label>
+          <textarea className="admin-edit-modal-input admin-edit-modal-textarea" value={form.notes || ''} onChange={set('notes')} placeholder="Any notes…" rows={3} />
+        </div>
+
+        <div className="admin-modal-actions admin-edit-modal-actions">
+          <button className="admin-cancel-btn" onClick={onCancel} disabled={saving}>Cancel</button>
+          <button className="admin-add-btn" onClick={() => onSave(form)} disabled={saving}>
+            {saving ? 'Saving…' : 'Save Guest'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ── Todo Item ──────────────────────────────────────────────────────────── */
 function TodoItem({ todo, onToggle, onDelete, onSaveNotes }) {
   const [expanded, setExpanded]     = useState(false)
@@ -118,6 +171,10 @@ export default function AdminDashboard() {
   const [newTodo, setNewTodo] = useState({ task: '', category: '' })
   const [addingTodo, setAddingTodo] = useState(false)
 
+  // Inline guest edit
+  const [editingGuest, setEditingGuest] = useState(null) // copy of guest being edited
+  const [savingGuest, setSavingGuest] = useState(false)
+
   // Mobile nav
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
@@ -151,6 +208,23 @@ export default function AdminDashboard() {
     setRsvps(rsvpData || [])
     setTodos(todoData || [])
     setLoading(false)
+  }
+
+  const handleSaveGuest = async (form) => {
+    if (!editingGuest) return
+    setSavingGuest(true)
+    const { first_name, last_name, email, phone, group_name, notes } = form
+    const { error } = await supabase
+      .from('guests')
+      .update({ first_name, last_name, email, phone, group_name, notes })
+      .eq('id', editingGuest.id)
+    if (error) {
+      alert('Error saving guest: ' + error.message)
+    } else {
+      setGuests(prev => prev.map(g => g.id === editingGuest.id ? { ...g, ...form } : g))
+      setEditingGuest(null)
+    }
+    setSavingGuest(false)
   }
 
   const handleAddGuest = async (e) => {
@@ -364,6 +438,16 @@ export default function AdminDashboard() {
           onConfirm={modal.onConfirm}
           onCancel={closeModal}
           loading={deleting}
+        />
+      )}
+
+      {/* Edit Guest Modal */}
+      {editingGuest && (
+        <EditGuestModal
+          guest={editingGuest}
+          onSave={handleSaveGuest}
+          onCancel={() => setEditingGuest(null)}
+          saving={savingGuest}
         />
       )}
 
@@ -607,6 +691,7 @@ export default function AdminDashboard() {
                       <td>{g.group_name || '—'}</td>
                       <td>{g.notes || '—'}</td>
                       <td className="admin-td-action">
+                        <button className="admin-edit-row-btn" onClick={() => setEditingGuest({ ...g })}>Edit</button>
                         <button className="admin-delete-row-btn" onClick={() => confirmDeleteGuest(g)}>Delete</button>
                       </td>
                     </tr>
