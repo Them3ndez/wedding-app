@@ -90,16 +90,6 @@ export default function RSVP() {
         )
       })
 
-      const submitBtn = containerRef.current.querySelector('.bbt-btn--primary[type="submit"]')
-      if (submitBtn) {
-        gsap.fromTo(submitBtn,
-          { opacity: 0, y: 50 },
-          {
-            opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
-            scrollTrigger: { trigger: submitBtn, start: 'top 85%', toggleActions: 'play none none reverse' },
-          }
-        )
-      }
     }, containerRef)
 
     return () => { ctx.revert(); ScrollTrigger.getAll().forEach(t => t.kill()) }
@@ -197,9 +187,11 @@ export default function RSVP() {
             />
           </div>
 
-          <button type="submit" className="bbt-btn bbt-btn--primary" disabled={submitting}>
-            {submitting ? 'Transmitting…' : 'Transmit Response'}
-          </button>
+          <div className="bbt-form-group" style={{ marginTop: '0.5rem', marginBottom: 0 }}>
+            <button type="submit" className="bbt-btn bbt-btn--primary" disabled={submitting}>
+              {submitting ? 'Transmitting…' : 'Transmit Response'}
+            </button>
+          </div>
         </form>
       )}
 

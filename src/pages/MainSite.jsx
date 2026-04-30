@@ -21,7 +21,6 @@ const THEMES = [
   { label: 'A Galaxy Far, Far Away', emoji: '🚀', path: '/starwars' },
   { label: 'The Seven Kingdoms',     emoji: '🐉', path: '/got' },
   { label: 'The Apartment',          emoji: '⚛️',  path: '/bbt' },
-  { label: 'The Good Place',         emoji: '😇', path: '/goodplace' },
   { label: 'Catch the Bouquet',      emoji: '💐', path: '/game' },
 ]
 

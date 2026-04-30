@@ -33,7 +33,7 @@ const universes = [
     name: 'The Good Place',
     tagline: "Holy Motherforking Shirtballs, We're Getting Married!",
     route: '/goodplace',
-    active: true,
+    active: false,
   },
   {
     id: 'game',
