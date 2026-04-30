@@ -278,7 +278,7 @@ export default function MainSite() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    const { error } = await supabase.from('rsvps').insert([{
+    const payload = {
       first_name: form.firstName,
       last_name: form.lastName,
       email: form.email,
@@ -288,21 +288,33 @@ export default function MainSite() {
       dietary: form.dietary,
       song: form.song,
       message: form.message,
-    }])
+    }
+    console.log('[MainSite] Inserting into Supabase:', payload)
+    const { error } = await supabase.from('rsvps').insert([payload])
+    console.log('[MainSite] Supabase insert result — error:', error)
 
     if (error) {
-      console.error('RSVP error:', error)
+      console.error('[MainSite] Supabase insert failed:', error)
       alert('Something went wrong. Please try again.')
       return
     }
 
     if (form.email) {
       const fullName = [form.firstName, form.lastName].filter(Boolean).join(' ')
-      fetch('/api/send-rsvp-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: fullName, email: form.email, attending: form.attendance }),
-      }).catch(() => {})
+      console.log('[MainSite] Calling /api/send-rsvp-email for:', fullName, form.email)
+      try {
+        const res = await fetch('/api/send-rsvp-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: fullName, email: form.email, attending: form.attendance }),
+        })
+        const json = await res.json().catch(() => null)
+        console.log('[MainSite] /api/send-rsvp-email response:', res.status, json)
+      } catch (err) {
+        console.error('[MainSite] /api/send-rsvp-email fetch error:', err)
+      }
+    } else {
+      console.log('[MainSite] No email provided — skipping confirmation email')
     }
 
     setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)])

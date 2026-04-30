@@ -9,14 +9,17 @@ gsap.registerPlugin(ScrollTrigger)
 const meals = ['Roasted Boar', 'Lemon Cakes', 'Braised Lamb', 'Hearth-Smoked Fish']
 
 async function sendConfirmationEmail(name, email, attending) {
+  console.log('[GoT] sendConfirmationEmail called with:', { name, email, attending })
   try {
-    await fetch('/api/send-rsvp-email', {
+    const res = await fetch('/api/send-rsvp-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, attending }),
     })
-  } catch (_) {
-    // email failure is non-blocking
+    const json = await res.json().catch(() => null)
+    console.log('[GoT] /api/send-rsvp-email response:', res.status, json)
+  } catch (err) {
+    console.error('[GoT] /api/send-rsvp-email fetch error:', err)
   }
 }
 
@@ -42,22 +45,18 @@ export default function RSVP() {
     const first_name = nameParts.length > 1 ? nameParts.slice(0, -1).join(' ') : nameParts[0]
     const last_name = nameParts.length > 1 ? nameParts[nameParts.length - 1] : ''
 
-    const { error } = await supabase.from('rsvps').insert([{
-      first_name,
-      last_name,
-      email: form.email,
-      attendance: attending,
-      guests: parseInt(form.guests, 10),
-      meal: checked.join(', ') || null,
-      dietary: null,
-      song: form.song || null,
-      message: form.message || null,
-    }])
+    const payload = { first_name, last_name, email: form.email, attendance: attending, guests: parseInt(form.guests, 10), meal: checked.join(', ') || null, dietary: null, song: form.song || null, message: form.message || null }
+    console.log('[GoT] Inserting into Supabase:', payload)
+    const { error } = await supabase.from('rsvps').insert([payload])
+    console.log('[GoT] Supabase insert result — error:', error)
 
     if (error) {
-      console.error('RSVP insert error:', error)
+      console.error('[GoT] Supabase insert failed, skipping email:', error)
     } else if (form.email) {
+      console.log('[GoT] Insert succeeded, calling sendConfirmationEmail')
       await sendConfirmationEmail(form.name, form.email, attending)
+    } else {
+      console.log('[GoT] Insert succeeded but no email provided — skipping email')
     }
 
     setSubmitting(false)
