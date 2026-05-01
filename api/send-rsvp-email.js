@@ -120,7 +120,7 @@ export default async function handler(req, res) {
     await resend.emails.send({
       from: 'rsvp@wendyandguillermo.com',
       to: email,
-      replyTo: 'wendyandguillermo2027@gmail.com',
+      replyTo: 'hello@wendyandguillermo.com',
       subject: isAttending
         ? 'We cannot wait to see you — Wendy & Guillermo'
         : 'Thank you for letting us know — Wendy & Guillermo',
