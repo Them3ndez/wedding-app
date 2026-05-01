@@ -104,6 +104,73 @@ const FORM_INIT = {
   dietary: '', song: '', message: '',
 }
 
+const MEMORIES_LIVE = true
+
+/* ── Memories Strip ─────────────────────────────────────────────────────── */
+function MemoriesStrip() {
+  const navigate = useNavigate()
+  const [photos, setPhotos] = useState([])
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    if (!MEMORIES_LIVE) return
+    supabase
+      .from('photos')
+      .select('id, file_url, guest_name, caption')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => { setPhotos(data || []); setLoaded(true) })
+  }, [])
+
+  if (MEMORIES_LIVE && !loaded) return null
+  if (MEMORIES_LIVE && photos.length === 0) return null
+
+  if (!MEMORIES_LIVE) {
+    return (
+      <>
+        <p className="ms-strip-label">Guest Memories</p>
+        <div className="ms-strip-divider" aria-hidden="true" />
+        <p className="ms-strip-coming-soon">Coming Soon</p>
+        <div className="ms-strip-divider" aria-hidden="true" />
+      </>
+    )
+  }
+
+  // Repeat photos enough times so each set is always wider than the viewport
+  const copies = Math.max(1, Math.ceil(2400 / ((photos.length || 1) * 148)))
+  const filled = Array.from({ length: copies }, () => photos).flat()
+
+  const renderSet = (keyPrefix) => filled.map((p, i) => (
+    <img
+      key={`${keyPrefix}-${i}`}
+      src={p.file_url}
+      alt={p.caption || p.guest_name}
+      className="ms-strip-thumb"
+      loading="lazy"
+    />
+  ))
+
+  return (
+    <>
+      <p className="ms-strip-label">Guest Memories</p>
+      <div className="ms-strip-divider" aria-hidden="true" />
+      <div
+        className="ms-strip-wrap"
+        onClick={() => navigate('/memories')}
+        role="button"
+        tabIndex={0}
+        aria-label="View guest memories"
+        onKeyDown={e => e.key === 'Enter' && navigate('/memories')}
+      >
+        <div className="ms-strip-track">
+          <div className="ms-strip-set">{renderSet('a')}</div>
+          <div className="ms-strip-set" aria-hidden="true">{renderSet('b')}</div>
+        </div>
+      </div>
+      <div className="ms-strip-divider" aria-hidden="true" />
+    </>
+  )
+}
+
 /* ── Album card with inner image pan ────────────────────────────────────── */
 function AlbumCard({ album, onOpen }) {
   return (
@@ -577,6 +644,7 @@ export default function MainSite() {
                 />
               ))}
             </div>
+            <MemoriesStrip />
           </div>
         </section>
 

@@ -175,6 +175,10 @@ export default function AdminDashboard() {
   const [editingGuest, setEditingGuest] = useState(null) // copy of guest being edited
   const [savingGuest, setSavingGuest] = useState(false)
 
+  // Photos & comments tabs
+  const [photos, setPhotos] = useState([])
+  const [adminComments, setAdminComments] = useState([])
+
   // Mobile nav
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
@@ -186,15 +190,32 @@ export default function AdminDashboard() {
     fetchData()
   }, [navigate])
 
-  // Clear selections when switching sections
+  // Clear selections when switching sections; lazy-load photos+comments together
   useEffect(() => {
     setSelectedGuests(new Set())
     setSelectedRsvps(new Set())
-  }, [activeSection])
+    if (activeSection === 'photos') {
+      fetchPhotos()
+      fetchComments()
+    }
+  }, [activeSection]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchTodos = async () => {
     const { data } = await supabase.from('todos').select('*').order('created_at', { ascending: true })
     setTodos(data || [])
+  }
+
+  const fetchPhotos = async () => {
+    const { data } = await supabase.from('photos').select('*').order('created_at', { ascending: false })
+    setPhotos(data || [])
+  }
+
+  const fetchComments = async () => {
+    const { data } = await supabase
+      .from('comments')
+      .select('*, photos(guest_name, file_url)')
+      .order('created_at', { ascending: false })
+    setAdminComments(data || [])
   }
 
   const fetchData = async () => {
@@ -305,7 +326,9 @@ export default function AdminDashboard() {
     openModal(
       `Are you sure you want to remove ${g.first_name} ${g.last_name} from the guest list? This cannot be undone.`,
       () => runDelete(async () => {
-        const { error } = await supabase.from('guests').delete().eq('id', g.id)
+        console.log('[DeleteGuest] Deleting id:', g.id)
+        const { data, error } = await supabase.from('guests').delete().eq('id', g.id)
+        console.log('[DeleteGuest] Result — data:', data, 'error:', error)
         if (error) { alert('Error: ' + error.message); return }
         setGuests(prev => prev.filter(x => x.id !== g.id))
         setSelectedGuests(prev => { const s = new Set(prev); s.delete(g.id); return s })
@@ -318,7 +341,9 @@ export default function AdminDashboard() {
     openModal(
       `Are you sure you want to remove ${ids.length} guest${ids.length > 1 ? 's' : ''} from the guest list? This cannot be undone.`,
       () => runDelete(async () => {
-        const { error } = await supabase.from('guests').delete().in('id', ids)
+        console.log('[DeleteGuests] Deleting ids:', ids)
+        const { data, error } = await supabase.from('guests').delete().in('id', ids)
+        console.log('[DeleteGuests] Result — data:', data, 'error:', error)
         if (error) { alert('Error: ' + error.message); return }
         setGuests(prev => prev.filter(x => !ids.includes(x.id)))
         setSelectedGuests(new Set())
@@ -331,7 +356,9 @@ export default function AdminDashboard() {
     openModal(
       `Are you sure you want to delete this RSVP from ${r.first_name} ${r.last_name}? This cannot be undone.`,
       () => runDelete(async () => {
-        const { error } = await supabase.from('rsvps').delete().eq('id', r.id)
+        console.log('[DeleteRsvp] Deleting id:', r.id)
+        const { data, error } = await supabase.from('rsvps').delete().eq('id', r.id)
+        console.log('[DeleteRsvp] Result — data:', data, 'error:', error)
         if (error) { alert('Error: ' + error.message); return }
         setRsvps(prev => prev.filter(x => x.id !== r.id))
         setSelectedRsvps(prev => { const s = new Set(prev); s.delete(r.id); return s })
@@ -344,10 +371,48 @@ export default function AdminDashboard() {
     openModal(
       `Are you sure you want to delete ${ids.length} selected RSVP${ids.length > 1 ? 's' : ''}? This cannot be undone.`,
       () => runDelete(async () => {
-        const { error } = await supabase.from('rsvps').delete().in('id', ids)
+        console.log('[DeleteRsvps] Deleting ids:', ids)
+        const { data, error } = await supabase.from('rsvps').delete().in('id', ids)
+        console.log('[DeleteRsvps] Result — data:', data, 'error:', error)
         if (error) { alert('Error: ' + error.message); return }
         setRsvps(prev => prev.filter(x => !ids.includes(x.id)))
         setSelectedRsvps(new Set())
+      })
+    )
+  }
+
+  // Photos
+  const confirmDeletePhoto = (p) => {
+    openModal(
+      `Delete this photo by ${p.guest_name}? This will also delete all its comments and cannot be undone.`,
+      () => runDelete(async () => {
+        console.log('[DeletePhoto] Deleting id:', p.id, 'file_path:', p.file_path)
+        // Delete comments first
+        await supabase.from('comments').delete().eq('photo_id', p.id)
+        // Delete from storage
+        if (p.file_path) {
+          const { error: storageError } = await supabase.storage.from('wedding-photos').remove([p.file_path])
+          console.log('[DeletePhoto] Storage result — error:', storageError)
+        }
+        const { data, error } = await supabase.from('photos').delete().eq('id', p.id)
+        console.log('[DeletePhoto] DB result — data:', data, 'error:', error)
+        if (error) { alert('Error: ' + error.message); return }
+        setPhotos(prev => prev.filter(x => x.id !== p.id))
+        setAdminComments(prev => prev.filter(x => x.photo_id !== p.id))
+      })
+    )
+  }
+
+  // Comments
+  const confirmDeleteComment = (c) => {
+    openModal(
+      `Delete comment by ${c.name}? This cannot be undone.`,
+      () => runDelete(async () => {
+        console.log('[DeleteComment] Deleting id:', c.id)
+        const { data, error } = await supabase.from('comments').delete().eq('id', c.id)
+        console.log('[DeleteComment] Result — data:', data, 'error:', error)
+        if (error) { alert('Error: ' + error.message); return }
+        setAdminComments(prev => prev.filter(x => x.id !== c.id))
       })
     )
   }
@@ -410,11 +475,12 @@ export default function AdminDashboard() {
     .reverse()
 
   const navItems = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'guests', label: 'Guest List' },
-    { id: 'rsvps', label: 'RSVPs' },
-    { id: 'meals', label: 'Meal Choices' },
-    { id: 'todos', label: 'To-Do List' },
+    { id: 'overview',  label: 'Overview' },
+    { id: 'guests',    label: 'Guest List' },
+    { id: 'rsvps',     label: 'RSVPs' },
+    { id: 'meals',     label: 'Meal Choices' },
+    { id: 'todos',     label: 'To-Do List' },
+    { id: 'photos',    label: 'Photos & Comments' },
   ]
 
   const pendingTodos   = todos.filter(t => !t.completed)
@@ -487,7 +553,10 @@ export default function AdminDashboard() {
           <h1 className="admin-header-title">
             {navItems.find(n => n.id === activeSection)?.label}
           </h1>
-          <button className="admin-refresh-btn" onClick={fetchData}>Refresh</button>
+          <button className="admin-refresh-btn" onClick={() => {
+            fetchData()
+            if (activeSection === 'photos') { fetchPhotos(); fetchComments() }
+          }}>Refresh</button>
         </header>
 
         {/* Overview */}
@@ -868,6 +937,76 @@ export default function AdminDashboard() {
                   ))}
                 </div>
               </>
+            )}
+          </section>
+        )}
+
+        {/* Photos & Comments */}
+        {activeSection === 'photos' && (
+          <section className="admin-section">
+            <p className="admin-section-count">{photos.length} photos · {adminComments.length} comments</p>
+            {photos.length === 0 ? (
+              <p className="admin-table-empty" style={{ border: '1px solid var(--adm-border)', borderRadius: 12, margin: 0 }}>No photos yet.</p>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.25rem' }}>
+                {photos.map(p => {
+                  const photoComments = adminComments.filter(c => c.photo_id === p.id)
+                  return (
+                    <div key={p.id} style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', border: '1px solid var(--adm-border)', display: 'flex', flexDirection: 'column' }}>
+                      {/* Thumbnail */}
+                      <div style={{ aspectRatio: '1', overflow: 'hidden', background: '#f0ede8' }}>
+                        <img
+                          src={p.file_url}
+                          alt={p.caption || p.guest_name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          loading="lazy"
+                        />
+                      </div>
+
+                      {/* Meta */}
+                      <div style={{ padding: '0.75rem 1rem 0.5rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                        <span style={{ fontWeight: 500, fontSize: '0.85rem', color: '#1c1c1e' }}>{p.guest_name}</span>
+                        {p.caption && <span style={{ fontSize: '0.8rem', color: 'rgba(28,28,30,0.55)', lineHeight: 1.4 }}>{p.caption}</span>}
+                        <span style={{ fontSize: '0.68rem', color: 'rgba(28,28,30,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', paddingTop: '0.2rem' }}>
+                          {new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      </div>
+
+                      {/* Buttons */}
+                      <div style={{ display: 'flex', gap: '0.5rem', padding: '0 1rem 0.75rem' }}>
+                        <button className="admin-edit-row-btn" style={{ flex: 1 }} onClick={() => window.open(p.file_url, '_blank')}>Download</button>
+                        <button className="admin-delete-row-btn" style={{ flex: 1 }} onClick={() => confirmDeletePhoto(p)}>Delete</button>
+                      </div>
+
+                      {/* Comments */}
+                      <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', padding: '0.65rem 1rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {photoComments.length === 0 ? (
+                          <span style={{ fontSize: '0.75rem', color: 'rgba(28,28,30,0.3)', fontStyle: 'italic' }}>No comments</span>
+                        ) : (
+                          photoComments.map(c => (
+                            <div key={c.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <span style={{ fontWeight: 500, fontSize: '0.78rem', color: '#1c1c1e' }}>{c.name} </span>
+                                <span style={{ fontSize: '0.78rem', color: 'rgba(28,28,30,0.65)' }}>{c.comment}</span>
+                                <div style={{ fontSize: '0.65rem', color: 'rgba(28,28,30,0.3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.1rem' }}>
+                                  {new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </div>
+                              </div>
+                              <button
+                                className="admin-delete-row-btn"
+                                style={{ flexShrink: 0, padding: '2px 8px', fontSize: '0.68rem' }}
+                                onClick={() => confirmDeleteComment(c)}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             )}
           </section>
         )}

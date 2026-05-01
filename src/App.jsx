@@ -7,6 +7,8 @@ import GoodPlaceApp from './pages/goodplace/GoodPlaceApp'
 import CatchTheBouquet from './pages/game/CatchTheBouquet'
 import AdminLogin from './pages/admin/AdminLogin'
 import AdminDashboard from './pages/admin/AdminDashboard'
+import Upload from './pages/Upload'
+import Memories from './pages/Memories'
 import { TransitionOverlayProvider } from './components/TransitionOverlay'
 
 export default function App() {
@@ -20,6 +22,8 @@ export default function App() {
           <Route path="/bbt/*" element={<BBTApp />} />
           <Route path="/goodplace/*" element={<GoodPlaceApp />} />
           <Route path="/game" element={<CatchTheBouquet />} />
+          <Route path="/upload" element={<Upload />} />
+          <Route path="/memories" element={<Memories />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />

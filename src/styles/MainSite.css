@@ -578,6 +578,7 @@ select.ms-form-input {
   background: #f4f4f1;
   justify-content: flex-start;
   padding-top: 8rem;
+  padding-bottom: 4rem;
 }
 
 /* 2×2 album grid */
@@ -1142,4 +1143,88 @@ select.ms-form-input {
 @keyframes fmtLabelIn {
   from { opacity:0; letter-spacing:0.08em; transform:translate(-50%,-50%) scale(0.82); }
   to   { opacity:1; letter-spacing:0.28em; transform:translate(-50%,-50%) scale(1); }
+}
+
+/* ── Memories Strip ── */
+.ms-strip-label {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
+  font-weight: 500;
+  font-variant: small-caps;
+  letter-spacing: 0.14em;
+  color: rgba(13, 13, 13, 0.6);
+  text-align: center;
+  margin-top: 5rem;
+  margin-bottom: 1rem;
+}
+
+.ms-strip-coming-soon {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: rgba(13, 13, 13, 0.25);
+  letter-spacing: 0.2em;
+  text-align: center;
+  margin: 0;
+}
+
+.ms-strip-divider {
+  width: 100px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #b8972e, transparent);
+  margin: 1.5rem auto;
+}
+
+.ms-strip-wrap {
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  overflow: hidden;
+  background: #f4f4f1;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.ms-strip-wrap--static {
+  cursor: default;
+}
+
+.ms-strip-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: msMarquee 60s linear infinite;
+}
+
+.ms-strip-set {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
+}
+
+.ms-strip-thumb {
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+  object-fit: cover;
+  display: block;
+  border-radius: 6px;
+}
+
+.ms-strip-text-run {
+  display: inline-block;
+  white-space: nowrap;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: rgba(13, 13, 13, 0.25);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  user-select: none;
+  padding: 1.5rem 2rem;
+}
+
+@keyframes msMarquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
