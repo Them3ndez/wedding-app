@@ -319,6 +319,10 @@ export default function MainSite() {
 
     setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)])
     setSubmitted(true)
+    const rsvpSection = document.getElementById('rsvp')
+    if (rsvpSection) {
+      window.scrollTo({ top: rsvpSection.offsetTop, behavior: 'smooth' })
+    }
   }
 
   return (
