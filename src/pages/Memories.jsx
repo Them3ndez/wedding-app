@@ -6,7 +6,7 @@ import '../styles/PhotoPages.css'
 // ─────────────────────────────────────────────────────────────────────────────
 // Set COMING_SOON = false on or after wedding day to reveal the live feed.
 // ─────────────────────────────────────────────────────────────────────────────
-const COMING_SOON = false // TODO: set back to true after testing
+const COMING_SOON = true
 
 // ── Lightbox ─────────────────────────────────────────────────────────────────
 function Lightbox({ photos, index, onClose, onPrev, onNext }) {

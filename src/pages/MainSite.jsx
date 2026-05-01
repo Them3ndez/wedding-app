@@ -104,7 +104,7 @@ const FORM_INIT = {
   dietary: '', song: '', message: '',
 }
 
-const MEMORIES_LIVE = true
+const MEMORIES_LIVE = false
 
 /* ── Memories Strip ─────────────────────────────────────────────────────── */
 function MemoriesStrip() {
